@@ -1,364 +1,174 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>To-Do Bersama (Realtime) — Tanpa Login</title>
-  <meta name="description" content="Shared realtime todo with Firebase Firestore"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do List Online Realtime</title>
   <style>
-    :root{
-      --bg:#07101a; --card:#0b1220; --accent:#6ee7b7; --muted:#94a3b8;
-      --glass: rgba(255,255,255,0.03); --radius:12px;
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #38bdf8;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      font-family: 'Segoe UI', sans-serif;
     }
-    *{box-sizing:border-box}
-    body{margin:0;min-height:100vh;background:linear-gradient(180deg,#07101a,#071a2a);color:#e6eef6;display:flex;align-items:center;justify-content:center;padding:20px}
-    .wrap{width:100%;max-width:980px}
-    header{display:flex;gap:12px;align-items:center;margin-bottom:18px}
-    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;color:#042024;font-weight:700}
-    h1{margin:0;font-size:20px}
-    .lead{margin:0;color:var(--muted);font-size:13px}
-    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
-    .card{background:var(--card);padding:16px;border-radius:var(--radius);box-shadow:0 8px 30px rgba(0,0,0,0.6)}
-    input,select,textarea,button{font-family:inherit}
-    input[type=text],input[type=date],select,textarea{background:var(--glass);border:1px solid rgba(255,255,255,0.04);padding:10px 12px;color:inherit;border-radius:8px;width:100%;outline:none}
-    button{background:linear-gradient(90deg,var(--accent),#60a5fa);color:#042024;border:none;padding:8px 10px;border-radius:8px;cursor:pointer}
-    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-    .controls{display:flex;gap:8px;align-items:center;margin-bottom:12px}
-    .list{max-height:64vh;overflow:auto}
-    .task{display:flex;gap:12px;align-items:flex-start;padding:10px;border-radius:10px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.03);background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent)}
-    .task .left{flex:1}
-    .task h3{margin:0;font-size:15px}
-    .meta{font-size:12px;color:var(--muted);margin-top:6px}
-    .actions{display:flex;gap:8px}
-    .completed h3{text-decoration:line-through;opacity:0.6}
-    footer{margin-top:12px;color:var(--muted);font-size:13px}
-    @media(max-width:900px){ .grid{grid-template-columns:1fr} .logo{width:48px;height:48px} }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      background: var(--card);
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      width: 100%;
+      max-width: 500px;
+    }
+    h1 {
+      text-align: center;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    form {
+      display: flex;
+      gap: 8px;
+    }
+    input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #334155;
+      color: var(--text);
+    }
+    button {
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      color: #0f172a;
+      font-weight: bold;
+      padding: 10px 16px;
+      cursor: pointer;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #475569;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    li.done span {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+    .actions button {
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="logo">TD</div>
-      <div>
-        <h1>To-Do Bersama (Realtime)</h1>
-        <div class="lead">Semua user melihat & update daftar yang sama — tanpa login.</div>
-      </div>
-    </header>
-
-    <div class="grid">
-      <section class="card">
-        <form id="taskForm">
-          <div style="display:flex;gap:8px;margin-bottom:8px">
-            <input id="title" type="text" placeholder="Tulis tugas..." required>
-            <select id="priority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select>
-          </div>
-          <div style="display:flex;gap:8px;margin-bottom:8px">
-            <input id="due" type="date">
-            <input id="tags" type="text" placeholder="Tag (pisah koma)">
-          </div>
-          <textarea id="note" rows="2" placeholder="Catatan (opsional)" style="margin-bottom:8px"></textarea>
-          <div style="display:flex;gap:8px">
-            <button type="submit">Tambah</button>
-            <button id="clearLocal" type="button" class="btn-ghost">Hapus Lokal</button>
-            <button id="exportBtn" type="button" class="btn-ghost">Export JSON</button>
-          </div>
-        </form>
-
-        <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:12px 0">
-
-        <div class="controls">
-          <input id="search" placeholder="Cari tugas atau tag..." style="flex:1">
-          <select id="filter"><option value="all">Semua</option><option value="active">Aktif</option><option value="done">Selesai</option></select>
-          <select id="sort"><option value="created_desc">Terbaru</option><option value="created_asc">Terlama</option><option value="due">Jatuh Tempo</option><option value="priority">Prioritas</option></select>
-        </div>
-
-        <div class="list card" id="taskList" style="padding:12px;background:transparent;box-shadow:none;border:none"></div>
-
-        <footer>
-          Mode: <strong id="modeLabel">Local (offline)</strong> — Klik <em>Enable Firebase</em> di sebelah kanan untuk aktifkan realtime.
-        </footer>
-      </section>
-
-      <aside class="card">
-        <h3 style="margin-top:0">Kontrol & Ringkasan</h3>
-        <div style="margin:10px 0;color:var(--muted)">
-          <div>Total: <span id="countTotal">0</span></div>
-          <div>Aktif: <span id="countActive">0</span></div>
-          <div>Selesai: <span id="countDone">0</span></div>
-        </div>
-
-        <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:12px 0">
-
-        <h4>Firebase Sync</h4>
-        <p style="color:var(--muted);font-size:13px">Klik untuk mengaktifkan sinkronisasi realtime (collection: <code>todos</code>).</p>
-        <div style="display:flex;gap:8px">
-          <button id="enableSync" class="btn-ghost">Enable Firebase</button>
-          <button id="disableSync" class="btn-ghost" style="display:none">Disable Sync</button>
-        </div>
-
-        <hr style="border:none;height:1px;background:rgba(255,255,255,0.03);margin:12px 0">
-        <small style="color:var(--muted)">Firestore must be enabled & rules set to allow read/write for testing.</small>
-      </aside>
-    </div>
+  <div class="container">
+    <h1>📝 To-Do Realtime</h1>
+    <form id="todoForm">
+      <input type="text" id="taskInput" placeholder="Tulis tugas baru..." required>
+      <button type="submit">Tambah</button>
+    </form>
+    <ul id="todoList"></ul>
   </div>
 
-  <!-- ------------- FIREBASE + APP LOGIC ------------- -->
+  <!-- Firebase -->
   <script type="module">
-    // modular imports (modern)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-    import {
-      getFirestore, collection, addDoc, getDocs, onSnapshot,
-      doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+    import { initializeApp } from "firebase/app";
+    import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot } 
+      from "firebase/analytics";
 
-    // ------------------- PASTE FIREBASE CONFIG HERE -------------------
-    // Replace these placeholder values with your Firebase project's config
-    const FIREBASE_CONFIG = {
-      apiKey: "PASTE_API_KEY",
-      authDomain: "PASTE_AUTH_DOMAIN",
-      projectId: "PASTE_PROJECT_ID",
-      storageBucket: "PASTE_STORAGE_BUCKET",
-      messagingSenderId: "PASTE_MESSAGING_ID",
-      appId: "PASTE_APP_ID"
-    };
-    // ------------------------------------------------------------------
+    // GANTI DENGAN PUNYAMU 🔥
+    const firebaseConfig = {
+  apiKey: "AIzaSyD4C76y8m0u7QBDownZGnbhpiPs9AT9AkY",
+  authDomain: "todo-realtime-318f7.firebaseapp.com",
+  projectId: "todo-realtime-318f7",
+  storageBucket: "todo-realtime-318f7.firebasestorage.app",
+  messagingSenderId: "153651970645",
+  appId: "1:153651970645:web:8f97601a96edb822ba0adc",
+  measurementId: "G-VGLGC7G5MT"
+};
 
-    // local storage fallback
-    const LS_KEY = 'shared_todo_v1';
-    let tasks = [];           // local mirror (array of objects)
-    let db = null;            // Firestore instance
-    let unsub = null;         // firestore unsubscribe function
-    let synced = false;       // whether realtime is enabled
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const analytics = getAnalytics(app);
+    const todosRef = collection(db, "todos");
 
-    // DOM
-    const taskList = document.getElementById('taskList');
-    const modeLabel = document.getElementById('modeLabel');
-    const enableBtn = document.getElementById('enableSync');
-    const disableBtn = document.getElementById('disableSync');
+    const form = document.getElementById("todoForm");
+    const taskInput = document.getElementById("taskInput");
+    const list = document.getElementById("todoList");
 
-    // load local
-    function loadLocal() {
-      try { tasks = JSON.parse(localStorage.getItem(LS_KEY) || '[]'); }
-      catch(e){ tasks = []; }
-      render();
-    }
-    function saveLocal() {
-      localStorage.setItem(LS_KEY, JSON.stringify(tasks));
-      render();
-    }
-
-    // create element
-    function createTaskEl(t) {
-      const el = document.createElement('div');
-      el.className = 'task' + (t.done ? ' completed' : '');
-      const left = document.createElement('div'); left.className='left';
-      const h = document.createElement('h3'); h.textContent = t.title;
-      const meta = document.createElement('div'); meta.className='meta';
-      meta.textContent = (t.due ? '📅 '+t.due+' • ' : '') + 'Prioritas: '+(t.priority||'medium') + (t.tags ? ' • '+t.tags : '');
-      left.appendChild(h); left.appendChild(meta);
-
-      const actions = document.createElement('div'); actions.className='actions';
-      const doneBtn = document.createElement('button'); doneBtn.className='btn-ghost'; doneBtn.textContent = t.done ? 'Buka' : 'Selesai';
-      doneBtn.addEventListener('click', async () => {
-        if (synced && t._id) {
-          try { await updateDoc(doc(db, 'todos', t._id), { done: !t.done }); }
-          catch(e){ console.error(e); alert('Gagal update di server'); }
-        } else toggleDoneLocal(t.id);
-      });
-      const editBtn = document.createElement('button'); editBtn.className='btn-ghost'; editBtn.textContent='Edit';
-      editBtn.addEventListener('click', ()=> startEditLocal(t));
-      const delBtn = document.createElement('button'); delBtn.className='btn-ghost'; delBtn.textContent='Hapus';
-      delBtn.addEventListener('click', async () => {
-        if (synced && t._id) {
-          try { await deleteDoc(doc(db, 'todos', t._id)); }
-          catch(e){ console.error(e); alert('Gagal hapus di server'); }
-        } else removeLocal(t.id);
-      });
-
-      actions.appendChild(doneBtn); actions.appendChild(editBtn); actions.appendChild(delBtn);
-      el.appendChild(left); el.appendChild(actions);
-      return el;
-    }
-
-    // render with search/filter/sort
-    function render() {
-      const q = document.getElementById('search').value.trim().toLowerCase();
-      const filter = document.getElementById('filter').value;
-      const sort = document.getElementById('sort').value;
-
-      let items = tasks.slice();
-
-      if (q) items = items.filter(t => (t.title||'').toLowerCase().includes(q) || (t.tags||'').toLowerCase().includes(q) || (t.note||'').toLowerCase().includes(q));
-      if (filter === 'active') items = items.filter(t => !t.done);
-      if (filter === 'done') items = items.filter(t => t.done);
-
-      if (sort === 'created_desc') items.sort((a,b) => (b.created||0)-(a.created||0));
-      if (sort === 'created_asc') items.sort((a,b) => (a.created||0)-(b.created||0));
-      if (sort === 'due') items.sort((a,b) => (a.due||'9999') > (b.due||'9999') ? 1 : -1);
-      if (sort === 'priority') { const order = { high:0, medium:1, low:2 }; items.sort((a,b)=> (order[a.priority]||1)-(order[b.priority]||1)); }
-
-      taskList.innerHTML = '';
-      if (items.length === 0) taskList.innerHTML = '<div style="color:var(--muted);padding:8px">Tidak ada tugas.</div>';
-      for (const t of items) taskList.appendChild(createTaskEl(t));
-
-      document.getElementById('countTotal').textContent = tasks.length;
-      document.getElementById('countActive').textContent = tasks.filter(x=>!x.done).length;
-      document.getElementById('countDone').textContent = tasks.filter(x=>x.done).length;
-    }
-
-    // local CRUD
-    function addLocalTask(data) {
-      const t = {
-        id: 't'+Date.now()+'-'+Math.random().toString(36).slice(2,6),
-        title: data.title,
-        note: data.note||'',
-        tags: data.tags||'',
-        priority: data.priority||'medium',
-        due: data.due||'',
-        done: false,
-        created: Date.now()
-      };
-      tasks.push(t); saveLocal();
-    }
-    function toggleDoneLocal(id) {
-      const t = tasks.find(x=>x.id===id); if(!t) return; t.done = !t.done; saveLocal();
-    }
-    function removeLocal(id) { tasks = tasks.filter(x=>x.id!==id); saveLocal(); }
-    function startEditLocal(t) {
-      const titleEl = document.getElementById('title');
-      const dueEl = document.getElementById('due');
-      const tagsEl = document.getElementById('tags');
-      const noteEl = document.getElementById('note');
-      titleEl.value = t.title; dueEl.value = t.due||''; tagsEl.value = t.tags||''; noteEl.value = t.note||'';
-      document.getElementById('saveButtonTemp')?.remove();
-      const saveBtn = document.createElement('button'); saveBtn.id='saveButtonTemp'; saveBtn.textContent='Simpan Edit'; saveBtn.type='button';
-      saveBtn.className='btn-ghost';
-      saveBtn.addEventListener('click', ()=> {
-        // update local
-        t.title = titleEl.value.trim(); t.due = dueEl.value; t.tags = tagsEl.value.trim(); t.note = noteEl.value.trim();
-        saveLocal();
-        saveBtn.remove();
-        document.getElementById('taskForm').reset();
-      });
-      document.querySelector('#taskForm > div').appendChild(saveBtn);
-    }
-
-    // export
-    document.getElementById('exportBtn').addEventListener('click', () => {
-      const blob = new Blob([JSON.stringify(tasks, null, 2)], {type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download = 'todos-export.json'; a.click(); URL.revokeObjectURL(url);
-    });
-
-    document.getElementById('clearLocal').addEventListener('click', ()=> {
-      if (!confirm('Hapus semua data lokal?')) return;
-      tasks=[]; saveLocal();
-    });
-
-    // form submit
-    document.getElementById('taskForm').addEventListener('submit', async (e) => {
+    // Tambah data
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const payload = {
-        title: document.getElementById('title').value.trim(),
-        note: document.getElementById('note').value.trim(),
-        tags: document.getElementById('tags').value.trim(),
-        priority: document.getElementById('priority').value,
-        due: document.getElementById('due').value || '',
-        created: Date.now(),
-        done: false
-      };
-      if (!payload.title) return alert('Isi judul tugas');
-      if (synced && db) {
-        try {
-          await addDoc(collection(db, 'todos'), payload);
-        } catch (err) { console.error(err); alert('Gagal tambah ke Firestore'); }
-      } else {
-        addLocalTask(payload);
-      }
-      e.target.reset();
+      const text = taskInput.value.trim();
+      if (!text) return;
+      await addDoc(todosRef, {
+        text,
+        done: false,
+        createdAt: Date.now()
+      });
+      taskInput.value = "";
     });
 
-    // enable sync
-    document.getElementById('enableSync').addEventListener('click', async () => {
-      if (synced) return;
-      // initialize firebase
-      try {
-        const app = initializeApp(FIREBASE_CONFIG);
-        db = getFirestore(app);
-      } catch (err) {
-        console.error(err); alert('Gagal inisialisasi Firebase — periksa config di file HTML'); return;
-      }
+    // Realtime sync
+    onSnapshot(todosRef, (snapshot) => {
+      list.innerHTML = "";
+      const tasks = [];
+      snapshot.forEach((docSnap) => tasks.push({ id: docSnap.id, ...docSnap.data() }));
+      tasks.sort((a,b)=>b.createdAt-a.createdAt);
 
-      // set rule: read existing server data
-      try {
-        const todosColl = collection(db, 'todos');
-        const q = query(todosColl, orderBy('created', 'desc'));
-        const snap = await getDocs(q);
-        if (snap.empty && tasks.length>0) {
-          // push local tasks to server (if server empty)
-          for (const t of tasks) {
-            const { id, ...payload } = t;
-            try { await addDoc(todosColl, payload); } catch(e){ console.error(e); }
-          }
-        }
-      } catch(e) {
-        console.warn('Pre-sync read failed (maybe rules) — continuing to attach listener', e);
-      }
-
-      // attach realtime listener
-      try {
-        const todosColl = collection(db, 'todos');
-        const q = query(todosColl, orderBy('created','desc'));
-        unsub = onSnapshot(q, (snap) => {
-          tasks = snap.docs.map(d => {
-            const data = d.data();
-            return {
-              _id: d.id,
-              title: data.title || data.text || '',
-              note: data.note||'',
-              tags: data.tags||'',
-              priority: data.priority||'medium',
-              due: data.due||'',
-              done: data.done||false,
-              created: data.created || Date.now()
-            };
-          });
-          saveLocal(); // saveLocal will call render()
-        }, (err) => {
-          console.error('Realtime listener error', err);
-          alert('Realtime listener error. Periksa Firestore rules & network.');
-        });
-      } catch(e) { console.error(e); alert('Gagal mulai realtime listener'); return; }
-
-      synced = true;
-      modeLabel.textContent = 'Realtime (Firestore)';
-      enableBtn.style.display = 'none';
-      disableBtn.style.display = 'inline-block';
-      alert('Realtime sinkron aktif — semua user akan melihat update secara langsung.');
+      tasks.forEach(task => {
+        const li = document.createElement("li");
+        li.className = task.done ? "done" : "";
+        li.innerHTML = `
+          <span>${task.text}</span>
+          <div class="actions">
+            <button data-id="${task.id}" data-action="toggle">${task.done ? "⟳" : "✔"}</button>
+            <button data-id="${task.id}" data-action="delete">🗑</button>
+          </div>
+        `;
+        list.appendChild(li);
+      });
     });
 
-    document.getElementById('disableSync').addEventListener('click', () => {
-      if (unsub) { unsub(); unsub = null; }
-      synced = false;
-      db = null;
-      modeLabel.textContent = 'Local (offline)';
-      enableBtn.style.display = 'inline-block';
-      disableBtn.style.display = 'none';
-      loadLocal();
-      alert('Sync dinonaktifkan (kembali ke local mode).');
+    // Delegasi tombol
+    list.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      const id = btn.dataset.id;
+      const action = btn.dataset.action;
+      const ref = doc(db, "todos", id);
+
+      if (action === "toggle") {
+        const li = btn.closest("li");
+        const done = li.classList.contains("done");
+        await updateDoc(ref, { done: !done });
+      } else if (action === "delete") {
+        await deleteDoc(ref);
+      }
     });
-
-    // helpers used by createTaskEl for local toggles
-    function toggleDoneLocal(id) { const t = tasks.find(x=>x.id===id); if(!t) return; t.done = !t.done; saveLocal(); }
-    function removeLocal(id) { tasks = tasks.filter(x=>x.id!==id); saveLocal(); }
-
-    // search/filter/sort bindings
-    ['search','filter','sort'].forEach(id => document.getElementById(id).addEventListener('input', render));
-
-    // initial load
-    loadLocal();
-
   </script>
 </body>
 </html>
