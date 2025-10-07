@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>To‑Do Online — Tanpa Install</title>
-  <meta name="description" content="Aplikasi todo sederhana: akses lewat browser, simpan di localStorage. Opsional: sinkronisasi Firebase (konfigurasi manual).">
+  <title>To-Do Online — Tanpa Install</title>
+  <meta name="description" content="Aplikasi todo sederhana: akses lewat browser, simpan di localStorage. Opsional: sinkronisasi Firebase.">
   <style>
     :root{
       --bg:#0f1724; --card:#0b1220; --accent:#6ee7b7; --muted:#94a3b8; --glass: rgba(255,255,255,0.03);
@@ -21,7 +21,6 @@
     .grid{display:grid; grid-template-columns:1fr 360px; gap:18px}
     .card{background:var(--card); padding:18px; border-radius:var(--radius); box-shadow:0 6px 18px rgba(2,6,23,0.6)}
 
-    form .row{display:flex; gap:8px; margin-bottom:8px}
     input[type=text], input[type=date], select, textarea{background:var(--glass); border:1px solid rgba(255,255,255,0.04); padding:10px 12px; color:inherit; border-radius:8px; width:100%; outline:none}
     button{background:linear-gradient(90deg,var(--accent),#60a5fa); color:#042024; border:none; padding:10px 12px; border-radius:10px; cursor:pointer}
     .btn-ghost{background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--muted)}
@@ -34,8 +33,6 @@
     .task .left{flex:1}
     .task h3{margin:0;font-size:15px}
     .meta{font-size:12px;color:var(--muted); margin-top:6px}
-    .actions{display:flex; gap:8px; align-items:center}
-    .pill{font-size:12px;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.02)}
     .completed h3{text-decoration:line-through; opacity:0.6}
 
     footer{margin-top:12px; color:var(--muted); font-size:13px}
@@ -51,29 +48,27 @@
     <header>
       <div class="logo">TD</div>
       <div>
-        <h1>To‑Do Online</h1>
-        <p class="lead">Aplikasi todo yang bisa dibuka lewat browser — tidak perlu install. Data tersimpan di browser. Opsional: sinkronisasi cloud (Firebase).</p>
+        <h1>To-Do Online</h1>
+        <p class="lead">Aplikasi todo yang bisa dibuka lewat browser — tidak perlu install. Data tersimpan di browser atau disinkronkan ke Firebase.</p>
       </div>
     </header>
 
     <div class="grid">
       <section class="card">
         <form id="taskForm">
-          <div class="row">
-            <input id="title" type="text" placeholder="Tulis tugas... (wajib)" required>
-            <select id="priority" title="Prioritas">
+          <div style="display:flex; gap:8px; margin-bottom:8px">
+            <input id="title" type="text" placeholder="Tulis tugas..." required>
+            <select id="priority">
               <option value="low">Low</option>
               <option value="medium" selected>Medium</option>
               <option value="high">High</option>
             </select>
           </div>
-          <div class="row">
+          <div style="display:flex; gap:8px; margin-bottom:8px">
             <input id="due" type="date">
             <input id="tags" type="text" placeholder="Tag (pisah koma)">
           </div>
-          <div style="margin-bottom:8px">
-            <textarea id="note" rows="2" placeholder="Keterangan / catatan (opsional)"></textarea>
-          </div>
+          <textarea id="note" rows="2" placeholder="Catatan (opsional)" style="margin-bottom:8px"></textarea>
           <div style="display:flex; gap:8px">
             <button id="saveBtn" type="submit">Tambah</button>
             <button id="updateBtn" type="button" class="btn-ghost" style="display:none">Update</button>
@@ -81,10 +76,10 @@
           </div>
         </form>
 
-        <hr style="border:none; height:1px; background:rgba(255,255,255,0.03); margin:12px 0">
+        <hr style="border:none; height:1px; background:rgba(255,255,255,0.05); margin:12px 0">
 
         <div class="controls">
-          <input id="search" class="search" placeholder="Cari tugas atau tag...">
+          <input id="search" class="search" placeholder="Cari tugas...">
           <select id="filter">
             <option value="all">Semua</option>
             <option value="active">Aktif</option>
@@ -93,25 +88,14 @@
           <select id="sort">
             <option value="new">Terbaru</option>
             <option value="old">Terlama</option>
-            <option value="due">Tanggal Jatuh Tempo</option>
+            <option value="due">Jatuh Tempo</option>
             <option value="priority">Prioritas</option>
           </select>
         </div>
 
-        <div style="display:flex; gap:8px; margin-bottom:10px">
-          <button id="exportBtn" class="btn-ghost" type="button">Export JSON</button>
-          <label class="btn-ghost" style="padding:8px 12px; cursor:pointer">
-            Import JSON
-            <input id="importFile" type="file" accept="application/json" style="display:none">
-          </label>
-          <button id="clearAll" class="btn-ghost" type="button">Hapus Semua</button>
-        </div>
+        <div class="list" id="taskList"></div>
 
-        <div class="list card" id="taskList" style="padding:12px; background:transparent; box-shadow:none; border:none"></div>
-
-        <footer>
-          Tips: untuk menjadikan "online" tanpa install, upload file ini ke GitHub Pages / Netlify / Vercel. Untuk sinkronisasi multi‑device aktifkan Firebase dan masukkan konfigurasi (lihat komentar di kode).
-        </footer>
+        <footer>Untuk sinkronisasi antar perangkat, aktifkan Firebase Firestore di bawah.</footer>
       </section>
 
       <aside class="card">
@@ -122,185 +106,119 @@
           <div>Selesai: <span id="countDone">0</span></div>
         </div>
 
-        <hr style="border:none; height:1px; background:rgba(255,255,255,0.03); margin:12px 0">
-
-        <h4>Sinkronisasi (opsional)</h4>
-        <p class="lead" style="font-size:13px">Aktifkan Firebase Firestore untuk menyimpan dan memuat tugas antar perangkat. Tidak disertakan otomatis — Anda perlu membuat project Firebase dan menempelkan konfigurasi di dalam file ini (lihat komentar di bawah).</p>
-
-        <div style="display:flex; gap:8px; margin-top:8px">
-          <button id="syncOn" class="btn-ghost">Aktifkan Sinkron</button>
-        </div>
-
-        <hr style="border:none; height:1px; background:rgba(255,255,255,0.03); margin:12px 0">
-        <small style="color:var(--muted)">Versi: 1.0 • Dibuat cepat oleh ChatGPT</small>
+        <hr style="border:none; height:1px; background:rgba(255,255,255,0.05); margin:12px 0">
+        <h4>Sinkronisasi Firebase</h4>
+        <button id="syncOn" class="btn-ghost">Aktifkan Firebase</button>
+        <small style="color:var(--muted); display:block; margin-top:10px">Versi 1.1 • ChatGPT</small>
       </aside>
     </div>
   </div>
 
-  <script>
-    // ======= DATA LAYER (localStorage) =======
-    const STORAGE_KEY = 'todo_app_v1';
-    let tasks = [];
-    let editingId = null;
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
-    // Load saved tasks
-    function load(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        tasks = raw ? JSON.parse(raw) : [];
-      }catch(e){ console.error(e); tasks = []; }
-    }
-    function save(){
+    // KONFIGURASI FIREBASE (ubah sesuai project kamu)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCdVNx-P4OoemNhx2lTG0LtZIkIAjxQUD0",
+      authDomain: "todolist-fdf92.firebaseapp.com",
+      projectId: "todolist-fdf92",
+      storageBucket: "todolist-fdf92.firebasestorage.app",
+      messagingSenderId: "865792443871",
+      appId: "1:865792443871:web:c17c9935190fa68623306a",
+      measurementId: "G-ZNQ76GQKKC"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ===== LOCAL STORAGE FALLBACK =====
+    const STORAGE_KEY = 'todo_app_v2';
+    let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+    function saveLocal() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
       render();
     }
 
-    // Utility
-    function uid(){ return 't'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8) }
-
-    // ======= RENDER =======
-    const taskListEl = document.getElementById('taskList');
-    const countTotal = document.getElementById('countTotal');
-    const countActive = document.getElementById('countActive');
-    const countDone = document.getElementById('countDone');
-
-    function render(){
-      const q = document.getElementById('search').value.toLowerCase().trim();
-      const filter = document.getElementById('filter').value;
-      const sort = document.getElementById('sort').value;
-
-      // copy
-      let items = tasks.slice();
-
-      if(q){ items = items.filter(t => t.title.toLowerCase().includes(q) || (t.tags||'').toLowerCase().includes(q) || (t.note||'').toLowerCase().includes(q)); }
-      if(filter==='active') items = items.filter(t => !t.done);
-      if(filter==='completed') items = items.filter(t => t.done);
-
-      if(sort==='new') items.sort((a,b)=>b.created-a.created);
-      if(sort==='old') items.sort((a,b)=>a.created-b.created);
-      if(sort==='due') items.sort((a,b)=>{ if(!a.due) return 1; if(!b.due) return -1; return new Date(a.due) - new Date(b.due)});
-      if(sort==='priority'){
-        const order = {high:0, medium:1, low:2};
-        items.sort((a,b)=>order[a.priority]-order[b.priority]);
-      }
-
-      taskListEl.innerHTML = '';
-      if(items.length===0){ taskListEl.innerHTML = '<div style="color:var(--muted); padding:8px">Tidak ada tugas.</div>'; }
-
-      for(const t of items){
-        const el = document.createElement('div'); el.className = 'task' + (t.done? ' completed':'');
-        const left = document.createElement('div'); left.className='left';
-        const h = document.createElement('h3'); h.textContent = t.title;
-        const meta = document.createElement('div'); meta.className='meta';
-        const parts = [];
-        if(t.due) parts.push('Due: '+t.due);
-        parts.push('Prioritas: '+(t.priority||'medium'));
-        if(t.tags) parts.push('Tags: '+t.tags);
-        if(t.note) parts.push(t.note.length>80? t.note.slice(0,80)+'...': t.note);
-        meta.textContent = parts.join(' • ');
-        left.appendChild(h); left.appendChild(meta);
-
-        const actions = document.createElement('div'); actions.className='actions';
-        const doneBtn = document.createElement('button'); doneBtn.className='btn-ghost'; doneBtn.textContent = t.done ? 'Buka' : 'Selesai';
-        doneBtn.onclick = ()=>{ toggleDone(t.id); };
-        const editBtn = document.createElement('button'); editBtn.className='btn-ghost'; editBtn.textContent='Edit'; editBtn.onclick = ()=>{ startEdit(t.id); };
-        const delBtn = document.createElement('button'); delBtn.className='btn-ghost'; delBtn.textContent='Hapus'; delBtn.onclick = ()=>{ if(confirm('Hapus tugas ini?')) removeTask(t.id); };
-
-        actions.appendChild(doneBtn); actions.appendChild(editBtn); actions.appendChild(delBtn);
-
-        el.appendChild(left);
-        el.appendChild(actions);
-        taskListEl.appendChild(el);
-      }
-
-      // counts
-      countTotal.textContent = tasks.length;
-      countDone.textContent = tasks.filter(t=>t.done).length;
-      countActive.textContent = tasks.filter(t=>!t.done).length;
+    // ===== CRUD LOGIC =====
+    function addTask(data) {
+      tasks.push({
+        id: 't' + Date.now(),
+        title: data.title,
+        note: data.note || '',
+        tags: data.tags || '',
+        priority: data.priority || 'medium',
+        due: data.due || '',
+        done: false,
+        created: Date.now()
+      });
+      saveLocal();
     }
 
-    // ======= CRUD =======
-    function addTask(data){
-      const t = Object.assign({
-        id: uid(), title:'', note:'', tags:'', priority:'medium', due:'', done:false, created: Date.now()
-      }, data);
-      tasks.push(t); save();
+    function toggleDone(id) {
+      const t = tasks.find(x => x.id === id);
+      if (t) t.done = !t.done;
+      saveLocal();
     }
-    function removeTask(id){ tasks = tasks.filter(x=>x.id!==id); save(); }
-    function toggleDone(id){ const t = tasks.find(x=>x.id===id); if(t){ t.done=!t.done; save(); } }
-    function startEdit(id){ const t = tasks.find(x=>x.id===id); if(!t) return; editingId = id; document.getElementById('title').value = t.title; document.getElementById('note').value = t.note||''; document.getElementById('tags').value = t.tags||''; document.getElementById('priority').value = t.priority||'medium'; document.getElementById('due').value = t.due||''; document.getElementById('saveBtn').style.display='none'; document.getElementById('updateBtn').style.display='inline-block'; document.getElementById('cancelEdit').style.display='inline-block'; }
-    function updateTask(){ if(!editingId) return; const t = tasks.find(x=>x.id===editingId); if(!t) return; t.title = document.getElementById('title').value.trim(); t.note = document.getElementById('note').value.trim(); t.tags = document.getElementById('tags').value.trim(); t.priority = document.getElementById('priority').value; t.due = document.getElementById('due').value; editingId = null; document.getElementById('saveBtn').style.display='inline-block'; document.getElementById('updateBtn').style.display='none'; document.getElementById('cancelEdit').style.display='none'; save(); }
-    function clearForm(){ document.getElementById('taskForm').reset(); editingId = null; document.getElementById('saveBtn').style.display='inline-block'; document.getElementById('updateBtn').style.display='none'; document.getElementById('cancelEdit').style.display='none'; }
 
-    // ======= EXPORT / IMPORT =======
-    function exportJSON(){ const dataStr = JSON.stringify(tasks, null, 2); const b = new Blob([dataStr], {type:'application/json'}); const url = URL.createObjectURL(b); const a = document.createElement('a'); a.href=url; a.download = 'todo-export-'+(new Date()).toISOString().slice(0,10)+'.json'; a.click(); URL.revokeObjectURL(url); }
-    function importJSON(file){ const r = new FileReader(); r.onload = e=>{ try{ const imported = JSON.parse(e.target.result); if(Array.isArray(imported)){
-          // optional: merge without duplicating
-          const existingIds = new Set(tasks.map(t=>t.id));
-          for(const it of imported){ if(it && it.id && !existingIds.has(it.id)) tasks.push(it); }
-          save(); alert('Import berhasil.');
-        } else alert('Format file tidak dikenali (harus array JSON).'); }catch(err){ alert('Gagal membaca file: '+err.message) }}; r.readAsText(file); }
+    function removeTask(id) {
+      tasks = tasks.filter(x => x.id !== id);
+      saveLocal();
+    }
 
-    // ======= UI BIND =======
-    document.getElementById('taskForm').addEventListener('submit', e=>{ e.preventDefault(); const title = document.getElementById('title').value.trim(); if(!title){ alert('Judul tugas wajib diisi'); return; } addTask({ title, note: document.getElementById('note').value.trim(), tags: document.getElementById('tags').value.trim(), priority: document.getElementById('priority').value, due: document.getElementById('due').value }); document.getElementById('taskForm').reset(); });
-    document.getElementById('updateBtn').addEventListener('click', updateTask);
-    document.getElementById('cancelEdit').addEventListener('click', ()=>{ clearForm(); });
-    document.getElementById('search').addEventListener('input', render);
-    document.getElementById('filter').addEventListener('change', render);
-    document.getElementById('sort').addEventListener('change', render);
-    document.getElementById('exportBtn').addEventListener('click', exportJSON);
-    document.getElementById('importFile').addEventListener('change', e=>{ if(e.target.files && e.target.files[0]) importJSON(e.target.files[0]); e.target.value = ''; });
-    document.getElementById('clearAll').addEventListener('click', ()=>{ if(confirm('Hapus semua tugas?')){ tasks=[]; save(); } });
+    function render() {
+      const list = document.getElementById('taskList');
+      list.innerHTML = '';
+      for (const t of tasks) {
+        const el = document.createElement('div');
+        el.className = 'task' + (t.done ? ' completed' : '');
+        el.innerHTML = `
+          <div class="left">
+            <h3>${t.title}</h3>
+            <div class="meta">${t.due ? '📅 ' + t.due + ' • ' : ''}${t.priority}</div>
+          </div>
+          <div class="actions">
+            <button class="btn-ghost" onclick="toggleDone('${t.id}')">${t.done ? 'Buka' : 'Selesai'}</button>
+            <button class="btn-ghost" onclick="removeTask('${t.id}')">Hapus</button>
+          </div>`;
+        list.appendChild(el);
+      }
+      document.getElementById('countTotal').textContent = tasks.length;
+      document.getElementById('countDone').textContent = tasks.filter(t => t.done).length;
+      document.getElementById('countActive').textContent = tasks.filter(t => !t.done).length;
+    }
 
-    // Initial load
-    load(); render();
+    render();
 
-    // ======= OPTIONAL: Firebase Sync (UNCOMMENT & CONFIGURE) =======
-    /*
-    // 1) Buat project di https://console.firebase.google.com
-    // 2) Tambahkan web app, salin konfigurasi di bawah -> isi di FIREBASE_CONFIG
-    // 3) Uncomment script <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyCdVNx-P4OoemNhx2lTG0LtZIkIAjxQUD0",
-    authDomain: "todolist-fdf92.firebaseapp.com",
-    projectId: "todolist-fdf92",
-    storageBucket: "todolist-fdf92.firebasestorage.app",
-    messagingSenderId: "865792443871",
-    appId: "1:865792443871:web:c17c9935190fa68623306a",
-    measurementId: "G-ZNQ76GQKKC"
-  };
-
-  // 🔥 Inisialisasi Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // 📝 Simpan to-do ke Firestore
-  async function addTodo(text) {
-    await addDoc(collection(db, "todos"), { text: text, done: false });
-    console.log("To-do disimpan:", text);
-  }
-
-  // 📥 Ambil semua to-do
-  async function loadTodos() {
-    const querySnapshot = await getDocs(collection(db, "todos"));
-    querySnapshot.forEach((docu) => {
-      console.log(docu.id, "=>", docu.data());
+    // ===== EVENT LISTENER =====
+    document.getElementById('taskForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const title = document.getElementById('title').value.trim();
+      if (!title) return alert('Tulis tugas terlebih dahulu!');
+      addTask({
+        title,
+        note: document.getElementById('note').value.trim(),
+        tags: document.getElementById('tags').value.trim(),
+        priority: document.getElementById('priority').value,
+        due: document.getElementById('due').value
+      });
+      e.target.reset();
     });
-  }
 
-  // Coba test
-  addTodo("Coba dari web");
-  loadTodos();
-</script>
+    document.getElementById('syncOn').addEventListener('click', async () => {
+      if (!confirm('Aktifkan sinkronisasi Firebase?')) return;
+      // Simpan semua task ke Firestore
+      for (const t of tasks) {
+        await addDoc(collection(db, "todos"), t);
+      }
+      alert('✅ Sinkronisasi ke Firebase berhasil!');
+    });
+
+    // Expose functions for inline onclick
+    window.toggleDone = toggleDone;
+    window.removeTask = removeTask;
+  </script>
 </body>
 </html>
-
