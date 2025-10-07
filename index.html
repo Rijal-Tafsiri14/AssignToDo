@@ -3,107 +3,148 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>To-Do List Online Realtime</title>
+  <title>To-Do Online Realtime</title>
   <style>
     :root {
-      --bg: #0f172a;
+      --bg: #0f1724;
       --card: #1e293b;
       --accent: #38bdf8;
+      --accent2: #6ee7b7;
       --text: #e2e8f0;
       --muted: #94a3b8;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Inter', sans-serif;
     }
     body {
-      background: var(--bg);
+      background: linear-gradient(180deg, #07101a 0%, #071a2a 100%);
       color: var(--text);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
+      margin: 0; padding: 32px;
+      display: flex; justify-content: center;
     }
-    .container {
-      background: var(--card);
-      padding: 24px;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      width: 100%;
-      max-width: 500px;
+    .wrap {
+      width: 100%; max-width: 980px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
     }
     h1 {
-      text-align: center;
+      font-size: 26px;
       color: var(--accent);
-      margin-bottom: 16px;
+      margin: 0;
     }
-    form {
-      display: flex;
-      gap: 8px;
+    p { color: var(--muted); font-size: 14px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 16px;
     }
-    input {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      background: #334155;
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+    input, select, textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
       color: var(--text);
+      padding: 8px 10px;
+      border-radius: 8px;
+      margin-bottom: 8px;
     }
     button {
-      background: var(--accent);
-      border: none;
-      border-radius: 8px;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
       color: #0f172a;
       font-weight: bold;
-      padding: 10px 16px;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
       cursor: pointer;
     }
-    ul {
-      list-style: none;
-      padding: 0;
-      margin-top: 20px;
-    }
-    li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #475569;
-      padding: 10px 14px;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      transition: all 0.2s ease;
-    }
-    li.done span {
-      text-decoration: line-through;
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.1);
       color: var(--muted);
     }
-    .actions button {
-      background: transparent;
-      border: none;
-      color: var(--accent);
-      cursor: pointer;
-      font-size: 16px;
-      margin-left: 6px;
+    .task {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
     }
+    .task.done h3 { text-decoration: line-through; opacity: 0.6; }
+    .meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .actions button { margin-left: 6px; font-size: 12px; }
+    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>📝 To-Do Realtime</h1>
-    <form id="todoForm">
-      <input type="text" id="taskInput" placeholder="Tulis tugas baru..." required>
-      <button type="submit">Tambah</button>
-    </form>
-    <ul id="todoList"></ul>
+  <div class="wrap">
+    <header>
+      <h1>📝 To-Do List Realtime</h1>
+      <p>Semua user berbagi data yang sama secara realtime — tanpa login.</p>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <form id="taskForm">
+          <input id="title" type="text" placeholder="Judul tugas..." required>
+          <textarea id="note" rows="2" placeholder="Catatan tambahan (opsional)"></textarea>
+          <div style="display:flex; gap:8px;">
+            <input id="due" type="date">
+            <select id="priority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <input id="tags" type="text" placeholder="Tag (pisah koma)">
+          <div style="display:flex; gap:8px;">
+            <button type="submit">Tambah</button>
+            <button id="updateBtn" type="button" class="btn-ghost" style="display:none;">Update</button>
+            <button id="cancelEdit" type="button" class="btn-ghost" style="display:none;">Batal</button>
+          </div>
+        </form>
+
+        <hr style="margin:12px 0; border:none; border-top:1px solid rgba(255,255,255,0.1);">
+
+        <div style="display:flex; gap:8px; margin-bottom:10px;">
+          <input id="search" placeholder="Cari tugas..." style="flex:1;">
+          <select id="filter">
+            <option value="all">Semua</option>
+            <option value="active">Aktif</option>
+            <option value="done">Selesai</option>
+          </select>
+        </div>
+
+        <div id="taskList"></div>
+      </section>
+
+      <aside class="card">
+        <h3>📊 Ringkasan</h3>
+        <p>Total: <span id="countTotal">0</span></p>
+        <p>Aktif: <span id="countActive">0</span></p>
+        <p>Selesai: <span id="countDone">0</span></p>
+        <hr style="margin:12px 0; border:none; border-top:1px solid rgba(255,255,255,0.1);">
+        <small style="color:var(--muted)">🔥 Data realtime menggunakan Firebase Firestore.<br>Versi 2.0 oleh ChatGPT x Rijal.</small>
+      </aside>
+    </div>
   </div>
 
-  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { 
-      getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot, query, orderBy 
+    import {
+      getFirestore, collection, addDoc, deleteDoc, updateDoc,
+      onSnapshot, doc, query, orderBy, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-    // ✅ Firebase Config kamu
+    // ✅ Konfigurasi Firebase kamu
     const firebaseConfig = {
       apiKey: "AIzaSyD4C76y8m0u7QBDownZGnbhpiPs9AT9AkY",
       authDomain: "todo-realtime-318f7.firebaseapp.com",
@@ -114,71 +155,132 @@
       measurementId: "G-VGLGC7G5MT"
     };
 
-    // 🔥 Inisialisasi Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const todosRef = collection(db, "todos");
 
-    const form = document.getElementById("todoForm");
-    const taskInput = document.getElementById("taskInput");
-    const list = document.getElementById("todoList");
+    let editingId = null;
 
-    // ➕ Tambah data
+    const form = document.getElementById("taskForm");
+    const listEl = document.getElementById("taskList");
+    const searchEl = document.getElementById("search");
+    const filterEl = document.getElementById("filter");
+
+    // ➕ Tambah Tugas
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const text = taskInput.value.trim();
-      if (!text) return;
-      try {
-        await addDoc(todosRef, {
-          text,
-          done: false,
-          createdAt: Date.now()
-        });
-        taskInput.value = "";
-      } catch (err) {
-        alert("Gagal menambah data: " + err.message);
-      }
+      const title = titleEl.value.trim();
+      if (!title) return alert("Judul wajib diisi!");
+      const newTask = {
+        title,
+        note: noteEl.value.trim(),
+        priority: priorityEl.value,
+        due: dueEl.value,
+        tags: tagsEl.value,
+        done: false,
+        createdAt: serverTimestamp()
+      };
+      await addDoc(todosRef, newTask);
+      form.reset();
     });
 
-    // 🔁 Realtime listener (semua user sinkron)
+    // 📝 Edit / Update
+    const titleEl = document.getElementById("title");
+    const noteEl = document.getElementById("note");
+    const priorityEl = document.getElementById("priority");
+    const dueEl = document.getElementById("due");
+    const tagsEl = document.getElementById("tags");
+    const updateBtn = document.getElementById("updateBtn");
+    const cancelEdit = document.getElementById("cancelEdit");
+
+    updateBtn.onclick = async () => {
+      if (!editingId) return;
+      const ref = doc(db, "todos", editingId);
+      await updateDoc(ref, {
+        title: titleEl.value,
+        note: noteEl.value,
+        priority: priorityEl.value,
+        due: dueEl.value,
+        tags: tagsEl.value
+      });
+      editingId = null;
+      form.reset();
+      updateBtn.style.display = cancelEdit.style.display = "none";
+    };
+    cancelEdit.onclick = () => {
+      editingId = null;
+      form.reset();
+      updateBtn.style.display = cancelEdit.style.display = "none";
+    };
+
+    // 🔁 Realtime listener
     const q = query(todosRef, orderBy("createdAt", "desc"));
-    onSnapshot(q, (snapshot) => {
-      list.innerHTML = "";
-      snapshot.forEach((docSnap) => {
-        const task = { id: docSnap.id, ...docSnap.data() };
-        const li = document.createElement("li");
-        li.className = task.done ? "done" : "";
-        li.innerHTML = `
-          <span>${task.text}</span>
+    onSnapshot(q, (snap) => {
+      let tasks = [];
+      snap.forEach((docu) => tasks.push({ id: docu.id, ...docu.data() }));
+      render(tasks);
+    });
+
+    // 🧩 Render UI
+    function render(items) {
+      const q = searchEl.value.toLowerCase();
+      const f = filterEl.value;
+      const filtered = items.filter(t => {
+        if (f === "done" && !t.done) return false;
+        if (f === "active" && t.done) return false;
+        if (q && !t.title.toLowerCase().includes(q) && !(t.tags||"").toLowerCase().includes(q))
+          return false;
+        return true;
+      });
+
+      listEl.innerHTML = "";
+      filtered.forEach(t => {
+        const el = document.createElement("div");
+        el.className = "task" + (t.done ? " done" : "");
+        el.innerHTML = `
+          <div>
+            <h3>${t.title}</h3>
+            <div class="meta">
+              ${t.due ? "📅 " + t.due + " • " : ""}
+              ${t.priority ? "⭐ " + t.priority + " • " : ""}
+              ${t.tags ? "🏷 " + t.tags + " • " : ""}
+              ${t.note ? t.note : ""}
+            </div>
+          </div>
           <div class="actions">
-            <button data-id="${task.id}" data-action="toggle">${task.done ? "⟳" : "✔"}</button>
-            <button data-id="${task.id}" data-action="delete">🗑</button>
+            <button data-id="${t.id}" data-act="toggle">${t.done ? "⟳" : "✔"}</button>
+            <button data-id="${t.id}" data-act="edit">✏️</button>
+            <button data-id="${t.id}" data-act="delete">🗑</button>
           </div>
         `;
-        list.appendChild(li);
+        listEl.appendChild(el);
       });
-    });
 
-    // ⚡ Aksi tombol toggle & delete
-    list.addEventListener("click", async (e) => {
+      document.getElementById("countTotal").textContent = items.length;
+      document.getElementById("countActive").textContent = items.filter(x => !x.done).length;
+      document.getElementById("countDone").textContent = items.filter(x => x.done).length;
+    }
+
+    // 🎯 Aksi
+    listEl.addEventListener("click", async (e) => {
       const btn = e.target.closest("button");
       if (!btn) return;
       const id = btn.dataset.id;
-      const action = btn.dataset.action;
+      const act = btn.dataset.act;
       const ref = doc(db, "todos", id);
 
-      try {
-        if (action === "toggle") {
-          const li = btn.closest("li");
-          const done = li.classList.contains("done");
-          await updateDoc(ref, { done: !done });
-        } else if (action === "delete") {
-          await deleteDoc(ref);
-        }
-      } catch (err) {
-        alert("Gagal update data: " + err.message);
+      if (act === "delete") await deleteDoc(ref);
+      else if (act === "toggle") await updateDoc(ref, { done: true });
+      else if (act === "edit") {
+        editingId = id;
+        const el = btn.closest(".task");
+        titleEl.value = el.querySelector("h3").textContent;
+        updateBtn.style.display = cancelEdit.style.display = "inline-block";
       }
     });
+
+    searchEl.oninput = () => render([]);
+    filterEl.onchange = () => render([]);
   </script>
 </body>
 </html>
