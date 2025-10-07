@@ -1,62 +1,94 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>To-Do Online Realtime (Tanpa Login)</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>To-Do Online — Semua User Realtime</title>
   <style>
     :root{
       --bg:#0f1724;--card:#0b1220;--accent:#6ee7b7;--muted:#94a3b8;
-      --radius:12px;font-family:Inter,system-ui,sans-serif;
+      --radius:12px;font-family:Inter,ui-sans-serif,system-ui;
     }
-    *{box-sizing:border-box}body{margin:0;min-height:100vh;
-      background:linear-gradient(180deg,#07101a,#071a2a);
-      color:#e6eef6;display:flex;align-items:center;justify-content:center;
-      padding:32px}
-    .wrap{width:100%;max-width:720px}
-    h1{text-align:center;margin-bottom:16px}
-    .card{background:var(--card);padding:18px;border-radius:var(--radius);
-      box-shadow:0 6px 18px rgba(2,6,23,0.6)}
-    input,button{padding:10px 12px;border-radius:8px;border:none;outline:none}
-    input{flex:1;background:rgba(255,255,255,0.05);color:white}
-    button{background:linear-gradient(90deg,var(--accent),#60a5fa);
-      color:#042024;font-weight:600;cursor:pointer}
-    ul{list-style:none;padding:0;margin-top:16px}
-    li{display:flex;justify-content:space-between;align-items:center;
-      background:rgba(255,255,255,0.05);padding:10px 12px;border-radius:8px;
-      margin-bottom:8px}
-    li.done span{text-decoration:line-through;opacity:0.6}
-    .actions button{background:transparent;border:1px solid rgba(255,255,255,0.1);
-      color:var(--muted);padding:6px 10px;font-size:12px}
-    footer{text-align:center;color:var(--muted);font-size:13px;margin-top:12px}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:linear-gradient(180deg,#07101a,#071a2a);
+      color:#e6eef6;display:flex;align-items:center;justify-content:center;padding:32px}
+    .wrap{width:100%;max-width:960px}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#60a5fa);
+      display:flex;align-items:center;justify-content:center;font-weight:700;color:#042024}
+    h1{font-size:20px;margin:0}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+    .card{background:var(--card);padding:18px;border-radius:var(--radius);box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    input,select,textarea{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.05);
+      padding:10px 12px;color:white;border-radius:8px;outline:none;width:100%}
+    button{background:linear-gradient(90deg,var(--accent),#60a5fa);color:#042024;border:none;padding:10px 12px;
+      border-radius:8px;cursor:pointer;font-weight:600}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--muted)}
+    .list{max-height:65vh;overflow:auto}
+    .task{display:flex;gap:12px;align-items:flex-start;padding:10px;border-radius:10px;margin-bottom:8px;
+      border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.03)}
+    .task h3{margin:0;font-size:15px}
+    .task.done h3{text-decoration:line-through;opacity:0.6}
+    .meta{font-size:12px;color:var(--muted);margin-top:4px}
+    footer{margin-top:10px;color:var(--muted);font-size:13px;text-align:center}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>📝 To-Do Online — Realtime</h1>
-    <div class="card">
-      <form id="form">
-        <div style="display:flex;gap:8px">
-          <input id="taskInput" type="text" placeholder="Tulis tugas baru..." required>
-          <button>Tambah</button>
+    <header>
+      <div class="logo">TD</div>
+      <div>
+        <h1>To-Do Online Realtime</h1>
+        <p class="lead">Semua pengguna berbagi daftar yang sama — tanpa login, langsung sinkron.</p>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <form id="taskForm">
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input id="title" type="text" placeholder="Tulis tugas..." required>
+            <select id="priority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input id="due" type="date">
+            <input id="tags" type="text" placeholder="Tag (opsional)">
+          </div>
+          <textarea id="note" rows="2" placeholder="Catatan (opsional)" style="margin-bottom:8px"></textarea>
+          <div style="display:flex;gap:8px">
+            <button type="submit">Tambah</button>
+          </div>
+        </form>
+
+        <div class="list" id="taskList"></div>
+
+        <footer>💡 Tambah tugas di satu browser, semua user langsung melihat realtime update!</footer>
+      </section>
+
+      <aside class="card">
+        <h3>Ringkasan</h3>
+        <div style="color:var(--muted);margin-bottom:8px">
+          <div>Total: <span id="countTotal">0</span></div>
+          <div>Selesai: <span id="countDone">0</span></div>
+          <div>Aktif: <span id="countActive">0</span></div>
         </div>
-      </form>
-      <ul id="todoList"></ul>
-      <footer>
-        Data tersimpan realtime di Firestore — semua user berbagi daftar ini.<br>
-        <small>Made with ❤️ + Firebase</small>
-      </footer>
+      </aside>
     </div>
   </div>
 
   <!-- Firebase SDK -->
   <script type="module">
-    // === 1. Import library Firebase modern (modular) ===
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, deleteDoc, doc,
-             onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot, query, orderBy } 
+      from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-    // === 2. Ganti dengan config project kamu ===
+    // ⚙️ GANTI config dengan punyamu sendiri
     const firebaseConfig = {
       apiKey: "AIzaSyCdVNx-P4OoemNhx2lTG0LtZIkIAjxQUD0",
       authDomain: "todolist-fdf92.firebaseapp.com",
@@ -66,60 +98,69 @@
       appId: "1:865792443871:web:c17c9935190fa68623306a",
     };
 
-    // === 3. Inisialisasi Firebase ===
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const todosRef = collection(db, "todos");
+    const q = query(todosRef, orderBy("created", "desc"));
 
-    // === 4. Elemen HTML ===
-    const form = document.getElementById("form");
-    const taskInput = document.getElementById("taskInput");
-    const todoList = document.getElementById("todoList");
+    const listEl = document.getElementById("taskList");
+    const totalEl = document.getElementById("countTotal");
+    const doneEl = document.getElementById("countDone");
+    const activeEl = document.getElementById("countActive");
+    const form = document.getElementById("taskForm");
 
-    // === 5. Tambah to-do ===
+    // Tambah tugas
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const text = taskInput.value.trim();
-      if (!text) return;
-      await addDoc(todosRef, { text, done: false, created: Date.now() });
-      taskInput.value = "";
+      const title = document.getElementById("title").value.trim();
+      const note = document.getElementById("note").value.trim();
+      const tags = document.getElementById("tags").value.trim();
+      const priority = document.getElementById("priority").value;
+      const due = document.getElementById("due").value;
+      if (!title) return;
+      await addDoc(todosRef, { title, note, tags, priority, due, done: false, created: Date.now() });
+      form.reset();
     });
 
-    // === 6. Realtime listener ===
-    onSnapshot(todosRef, (snapshot) => {
-      todoList.innerHTML = "";
+    // Realtime listener
+    onSnapshot(q, (snapshot) => {
       const items = [];
-      snapshot.forEach((docu) => {
-        items.push({ id: docu.id, ...docu.data() });
-      });
-      // Urutkan by waktu
-      items.sort((a, b) => b.created - a.created);
-
-      for (const t of items) {
-        const li = document.createElement("li");
-        li.className = t.done ? "done" : "";
-        const span = document.createElement("span");
-        span.textContent = t.text;
-        const act = document.createElement("div");
-        act.className = "actions";
-
-        const doneBtn = document.createElement("button");
-        doneBtn.textContent = t.done ? "Buka" : "Selesai";
-        doneBtn.onclick = async () => {
-          await updateDoc(doc(db, "todos", t.id), { done: !t.done });
-        };
-
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "Hapus";
-        delBtn.onclick = async () => {
-          await deleteDoc(doc(db, "todos", t.id));
-        };
-
-        act.append(doneBtn, delBtn);
-        li.append(span, act);
-        todoList.appendChild(li);
-      }
+      snapshot.forEach(docu => items.push({ id: docu.id, ...docu.data() }));
+      render(items);
     });
+
+    // Render daftar
+    function render(items) {
+      listEl.innerHTML = "";
+      if (items.length === 0) listEl.innerHTML = '<div style="color:var(--muted);padding:8px">Belum ada tugas.</div>';
+      let doneCount = 0;
+      for (const t of items) {
+        if (t.done) doneCount++;
+        const el = document.createElement("div");
+        el.className = "task" + (t.done ? " done" : "");
+        el.innerHTML = `
+          <div style="flex:1">
+            <h3>${t.title}</h3>
+            <div class="meta">
+              ${t.due ? "Due: " + t.due + " • " : ""}
+              Prioritas: ${t.priority}
+              ${t.tags ? " • Tags: " + t.tags : ""}
+              ${t.note ? " • " + t.note : ""}
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-ghost toggle">${t.done ? "Buka" : "Selesai"}</button>
+            <button class="btn-ghost del">Hapus</button>
+          </div>
+        `;
+        el.querySelector(".toggle").onclick = () => updateDoc(doc(db, "todos", t.id), { done: !t.done });
+        el.querySelector(".del").onclick = () => deleteDoc(doc(db, "todos", t.id));
+        listEl.appendChild(el);
+      }
+      totalEl.textContent = items.length;
+      doneEl.textContent = doneCount;
+      activeEl.textContent = items.length - doneCount;
+    }
   </script>
 </body>
 </html>
