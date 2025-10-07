@@ -1,150 +1,13 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>To-Do Online Realtime</title>
-  <style>
-    :root {
-      --bg: #0f1724;
-      --card: #1e293b;
-      --accent: #38bdf8;
-      --accent2: #6ee7b7;
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      font-family: 'Inter', sans-serif;
-    }
-    body {
-      background: linear-gradient(180deg, #07101a 0%, #071a2a 100%);
-      color: var(--text);
-      margin: 0; padding: 32px;
-      display: flex; justify-content: center;
-    }
-    .wrap {
-      width: 100%; max-width: 980px;
-    }
-    header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    h1 {
-      font-size: 26px;
-      color: var(--accent);
-      margin: 0;
-    }
-    p { color: var(--muted); font-size: 14px; }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 340px;
-      gap: 16px;
-    }
-    .card {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    }
-    input, select, textarea {
-      width: 100%;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: var(--text);
-      padding: 8px 10px;
-      border-radius: 8px;
-      margin-bottom: 8px;
-    }
-    button {
-      background: linear-gradient(90deg, var(--accent2), var(--accent));
-      color: #0f172a;
-      font-weight: bold;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .btn-ghost {
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.1);
-      color: var(--muted);
-    }
-    .task {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 10px;
-      padding: 10px;
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-    .task.done h3 { text-decoration: line-through; opacity: 0.6; }
-    .meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
-    .actions button { margin-left: 6px; font-size: 12px; }
-    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <header>
-      <h1>📝 To-Do List Realtime</h1>
-      <p>Semua user berbagi data yang sama secara realtime — tanpa login.</p>
-    </header>
-
-    <div class="grid">
-      <section class="card">
-        <form id="taskForm">
-          <input id="title" type="text" placeholder="Judul tugas..." required>
-          <textarea id="note" rows="2" placeholder="Catatan tambahan (opsional)"></textarea>
-          <div style="display:flex; gap:8px;">
-            <input id="due" type="date">
-            <select id="priority">
-              <option value="low">Low</option>
-              <option value="medium" selected>Medium</option>
-              <option value="high">High</option>
-            </select>
-          </div>
-          <input id="tags" type="text" placeholder="Tag (pisah koma)">
-          <div style="display:flex; gap:8px;">
-            <button type="submit">Tambah</button>
-            <button id="updateBtn" type="button" class="btn-ghost" style="display:none;">Update</button>
-            <button id="cancelEdit" type="button" class="btn-ghost" style="display:none;">Batal</button>
-          </div>
-        </form>
-
-        <hr style="margin:12px 0; border:none; border-top:1px solid rgba(255,255,255,0.1);">
-
-        <div style="display:flex; gap:8px; margin-bottom:10px;">
-          <input id="search" placeholder="Cari tugas..." style="flex:1;">
-          <select id="filter">
-            <option value="all">Semua</option>
-            <option value="active">Aktif</option>
-            <option value="done">Selesai</option>
-          </select>
-        </div>
-
-        <div id="taskList"></div>
-      </section>
-
-      <aside class="card">
-        <h3>📊 Ringkasan</h3>
-        <p>Total: <span id="countTotal">0</span></p>
-        <p>Aktif: <span id="countActive">0</span></p>
-        <p>Selesai: <span id="countDone">0</span></p>
-        <hr style="margin:12px 0; border:none; border-top:1px solid rgba(255,255,255,0.1);">
-        <small style="color:var(--muted)">🔥 Data realtime menggunakan Firebase Firestore.<br>Versi 2.0 oleh ChatGPT x Rijal.</small>
-      </aside>
-    </div>
-  </div>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>To-Do List Realtime</title>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import {
-      getFirestore, collection, addDoc, deleteDoc, updateDoc,
-      onSnapshot, doc, query, orderBy, serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // ✅ Konfigurasi Firebase kamu
     const firebaseConfig = {
       apiKey: "AIzaSyD4C76y8m0u7QBDownZGnbhpiPs9AT9AkY",
       authDomain: "todo-realtime-318f7.firebaseapp.com",
@@ -157,130 +20,153 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const todosRef = collection(db, "todos");
+    const todosCol = collection(db, "todos");
 
-    let editingId = null;
+    // Referensi elemen
+    const form = document.getElementById("todoForm");
+    const list = document.getElementById("todoList");
 
-    const form = document.getElementById("taskForm");
-    const listEl = document.getElementById("taskList");
-    const searchEl = document.getElementById("search");
-    const filterEl = document.getElementById("filter");
-
-    // ➕ Tambah Tugas
+    // Tambah data
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const title = titleEl.value.trim();
-      if (!title) return alert("Judul wajib diisi!");
-      const newTask = {
+      const title = form.title.value.trim();
+      const date = form.date.value;
+      const priority = form.priority.value;
+      const time = form.time.value;
+      const pic = form.pic.value.trim();
+
+      if (!title) return alert("Isi dulu judul tugasnya!");
+
+      await addDoc(todosCol, {
         title,
-        note: noteEl.value.trim(),
-        priority: priorityEl.value,
-        due: dueEl.value,
-        tags: tagsEl.value,
+        date,
+        priority,
+        time,
+        pic,
         done: false,
-        createdAt: serverTimestamp()
-      };
-      await addDoc(todosRef, newTask);
+        createdAt: new Date()
+      });
+
       form.reset();
     });
 
-    // 📝 Edit / Update
-    const titleEl = document.getElementById("title");
-    const noteEl = document.getElementById("note");
-    const priorityEl = document.getElementById("priority");
-    const dueEl = document.getElementById("due");
-    const tagsEl = document.getElementById("tags");
-    const updateBtn = document.getElementById("updateBtn");
-    const cancelEdit = document.getElementById("cancelEdit");
-
-    updateBtn.onclick = async () => {
-      if (!editingId) return;
-      const ref = doc(db, "todos", editingId);
-      await updateDoc(ref, {
-        title: titleEl.value,
-        note: noteEl.value,
-        priority: priorityEl.value,
-        due: dueEl.value,
-        tags: tagsEl.value
-      });
-      editingId = null;
-      form.reset();
-      updateBtn.style.display = cancelEdit.style.display = "none";
-    };
-    cancelEdit.onclick = () => {
-      editingId = null;
-      form.reset();
-      updateBtn.style.display = cancelEdit.style.display = "none";
-    };
-
-    // 🔁 Realtime listener
-    const q = query(todosRef, orderBy("createdAt", "desc"));
-    onSnapshot(q, (snap) => {
-      let tasks = [];
-      snap.forEach((docu) => tasks.push({ id: docu.id, ...docu.data() }));
-      render(tasks);
-    });
-
-    // 🧩 Render UI
-    function render(items) {
-      const q = searchEl.value.toLowerCase();
-      const f = filterEl.value;
-      const filtered = items.filter(t => {
-        if (f === "done" && !t.done) return false;
-        if (f === "active" && t.done) return false;
-        if (q && !t.title.toLowerCase().includes(q) && !(t.tags||"").toLowerCase().includes(q))
-          return false;
-        return true;
-      });
-
-      listEl.innerHTML = "";
-      filtered.forEach(t => {
-        const el = document.createElement("div");
-        el.className = "task" + (t.done ? " done" : "");
-        el.innerHTML = `
+    // Tampilkan realtime data
+    onSnapshot(todosCol, (snapshot) => {
+      list.innerHTML = "";
+      snapshot.forEach((docSnap) => {
+        const todo = docSnap.data();
+        const li = document.createElement("div");
+        li.className = "todo-item";
+        li.innerHTML = `
           <div>
-            <h3>${t.title}</h3>
-            <div class="meta">
-              ${t.due ? "📅 " + t.due + " • " : ""}
-              ${t.priority ? "⭐ " + t.priority + " • " : ""}
-              ${t.tags ? "🏷 " + t.tags + " • " : ""}
-              ${t.note ? t.note : ""}
-            </div>
+            <h3>${todo.title}</h3>
+            <p>📅 ${todo.date || "Tanpa tanggal"} ${todo.time ? `• Selesai jam ${todo.time}` : ""}</p>
+            <p>⭐ ${todo.priority || "medium"}</p>
+            <p>👤 <b>PIC:</b> ${todo.pic || "Belum ditentukan"}</p>
           </div>
           <div class="actions">
-            <button data-id="${t.id}" data-act="toggle">${t.done ? "⟳" : "✔"}</button>
-            <button data-id="${t.id}" data-act="edit">✏️</button>
-            <button data-id="${t.id}" data-act="delete">🗑</button>
+            <button class="done ${todo.done ? "active" : ""}">✔</button>
+            <button class="edit">✏️</button>
+            <button class="delete">🗑️</button>
           </div>
         `;
-        listEl.appendChild(el);
+
+        // Tombol selesai
+        li.querySelector(".done").onclick = async () => {
+          await updateDoc(doc(db, "todos", docSnap.id), { done: !todo.done });
+        };
+
+        // Tombol hapus
+        li.querySelector(".delete").onclick = async () => {
+          if (confirm("Hapus tugas ini?")) {
+            await deleteDoc(doc(db, "todos", docSnap.id));
+          }
+        };
+
+        // Tombol edit
+        li.querySelector(".edit").onclick = async () => {
+          const newTitle = prompt("Edit nama tugas:", todo.title);
+          const newPic = prompt("Edit PIC:", todo.pic || "");
+          if (newTitle !== null && newPic !== null) {
+            await updateDoc(doc(db, "todos", docSnap.id), { title: newTitle, pic: newPic });
+          }
+        };
+
+        if (todo.done) li.classList.add("done");
+        list.appendChild(li);
       });
-
-      document.getElementById("countTotal").textContent = items.length;
-      document.getElementById("countActive").textContent = items.filter(x => !x.done).length;
-      document.getElementById("countDone").textContent = items.filter(x => x.done).length;
-    }
-
-    // 🎯 Aksi
-    listEl.addEventListener("click", async (e) => {
-      const btn = e.target.closest("button");
-      if (!btn) return;
-      const id = btn.dataset.id;
-      const act = btn.dataset.act;
-      const ref = doc(db, "todos", id);
-
-      if (act === "delete") await deleteDoc(ref);
-      else if (act === "toggle") await updateDoc(ref, { done: true });
-      else if (act === "edit") {
-        editingId = id;
-        const el = btn.closest(".task");
-        titleEl.value = el.querySelector("h3").textContent;
-        updateBtn.style.display = cancelEdit.style.display = "inline-block";
-      }
     });
-
-    searchEl.oninput = () => render([]);
-    filterEl.onchange = () => render([]);
   </script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0e1726;
+      color: #f5f6fa;
+      margin: 0;
+      padding: 30px;
+    }
+    h1 { text-align: center; margin-bottom: 20px; }
+    form {
+      background: #1a2332;
+      padding: 20px;
+      border-radius: 12px;
+      display: grid;
+      gap: 10px;
+      max-width: 500px;
+      margin: 0 auto 20px;
+    }
+    input, select, button {
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    button {
+      background: #00bcd4;
+      color: #fff;
+      cursor: pointer;
+    }
+    .todo-item {
+      background: #1a2332;
+      border-radius: 12px;
+      padding: 15px 20px;
+      margin: 10px auto;
+      max-width: 500px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .todo-item.done { opacity: 0.5; text-decoration: line-through; }
+    .actions button {
+      margin-left: 6px;
+      background: #00bcd4;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    .actions .done.active {
+      background: #2ecc71;
+    }
+  </style>
+</head>
+<body>
+  <h1>📝 To-Do List Realtime (with PIC)</h1>
+  <form id="todoForm">
+    <input type="text" name="title" placeholder="Judul tugas..." required />
+    <input type="date" name="date" />
+    <input type="time" name="time" />
+    <select name="priority">
+      <option value="low">low</option>
+      <option value="medium" selected>medium</option>
+      <option value="high">high</option>
+    </select>
+    <input type="text" name="pic" placeholder="Nama PIC (penanggung jawab)" />
+    <button type="submit">Tambah Tugas</button>
+  </form>
+
+  <div id="todoList"></div>
 </body>
 </html>
