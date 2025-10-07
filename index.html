@@ -1,150 +1,154 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Realtime To-Do List + PIC</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>To-Do List Realtime + PIC</title>
   <style>
-    /* === Global Styles === */
-    * { box-sizing: border-box; }
     body {
-      background: linear-gradient(145deg, #0d1323, #1a2238);
-      font-family: "Segoe UI", sans-serif;
-      color: #f8f9fa;
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #0d1b2a, #1b263b);
+      color: #fff;
       margin: 0;
-      padding: 0;
+      padding: 40px 15px;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 25px 30px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(6px);
     }
 
     h1 {
-      margin-top: 40px;
+      text-align: center;
       color: #00e5ff;
-      font-size: 2rem;
-      letter-spacing: 1px;
-      text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
-    }
-
-    /* === Container === */
-    .todo-container {
-      width: 90%;
-      max-width: 700px;
-      background: #1f2a44;
-      padding: 20px;
-      margin-top: 20px;
-      border-radius: 16px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-    }
-
-    /* === Input Area === */
-    .todo-inputs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
       margin-bottom: 20px;
+      font-weight: 600;
     }
 
-    .todo-inputs input, 
-    .todo-inputs select {
+    .form-section {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    input, select {
       flex: 1;
-      padding: 10px;
-      border-radius: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
       border: none;
+      font-size: 1rem;
+      background: #16213e;
+      color: white;
       outline: none;
-      font-size: 1em;
-      background: #2b3b5a;
-      color: #fff;
     }
 
-    .todo-inputs button {
+    input::placeholder {
+      color: #aaa;
+    }
+
+    button {
       background: #00e5ff;
       border: none;
-      padding: 10px 18px;
-      border-radius: 10px;
-      cursor: pointer;
-      color: #0d1323;
+      padding: 10px 20px;
+      border-radius: 8px;
       font-weight: bold;
-      transition: 0.2s ease;
-    }
-    .todo-inputs button:hover {
-      background: #00bcd4;
+      cursor: pointer;
+      transition: 0.3s;
+      color: #000;
     }
 
-    /* === Todo Card === */
-    .todo-item {
-      background: #273454;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
-      transition: all 0.3s ease;
+    button:hover {
+      background: #04bcd4;
     }
-    .todo-item:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+
+    #todoList {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .todo-card {
+      background: #1b2a49;
+      padding: 16px;
+      border-radius: 10px;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
     }
 
     .todo-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 1.05em;
+    }
+
+    .todo-header h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
     }
 
     .todo-actions button {
-      border: none;
+      margin-left: 8px;
       background: #00e5ff;
-      color: #000;
-      padding: 6px 9px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-left: 4px;
-      transition: 0.2s;
-    }
-
-    .todo-actions button:hover {
-      background: #00bcd4;
-      transform: scale(1.05);
+      padding: 6px 10px;
+      font-size: 0.9rem;
+      border-radius: 6px;
     }
 
     .todo-meta {
-      font-size: 0.9em;
-      color: #b0c7ff;
-      margin-top: 4px;
+      font-size: 0.9rem;
+      color: #bbb;
+      margin-top: 6px;
     }
 
     .pic-info {
-      font-size: 0.9em;
-      margin-top: 5px;
-      color: #ffd700;
+      margin-top: 8px;
       font-style: italic;
+      color: #ffd700;
+    }
+
+    .done h3 {
+      text-decoration: line-through;
+      color: #888;
     }
 
     .done {
-      opacity: 0.7;
-      text-decoration: line-through;
-    }
-
-    @media (max-width: 600px) {
-      .todo-inputs { flex-direction: column; }
+      opacity: 0.8;
+      border-left: 4px solid #00e5ff;
     }
   </style>
 </head>
 <body>
-  <h1>Realtime To-Do List 👥</h1>
+  <div class="container">
+    <h1>To-Do List Realtime + PIC 👥</h1>
 
-  <div class="todo-container">
-    <div class="todo-inputs">
-      <input type="text" id="taskInput" placeholder="Nama tugas..." />
-      <input type="date" id="dateInput" />
-      <select id="priorityInput">
-        <option value="low">Low</option>
-        <option value="medium" selected>Medium</option>
-        <option value="high">High</option>
-      </select>
-      <button id="addBtn">Tambah</button>
+    <div class="form-section">
+      <div class="form-row">
+        <input type="text" id="taskInput" placeholder="Nama tugas..." />
+        <input type="date" id="dateInput" />
+      </div>
+      <div class="form-row">
+        <select id="priorityInput">
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High</option>
+        </select>
+        <button id="addBtn">+ Tambah Tugas</button>
+      </div>
     </div>
 
     <div id="todoList"></div>
@@ -152,9 +156,8 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    // === Firebase Config ===
     const firebaseConfig = {
       apiKey: "AIzaSyD4C76y8m0u7QBDownZGnbhpiPs9AT9AkY",
       authDomain: "todo-realtime-318f7.firebaseapp.com",
@@ -168,6 +171,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const todoRef = collection(db, "todos");
+    const q = query(todoRef, orderBy("date", "asc"));
 
     const taskInput = document.getElementById("taskInput");
     const dateInput = document.getElementById("dateInput");
@@ -175,39 +179,37 @@
     const addBtn = document.getElementById("addBtn");
     const todoList = document.getElementById("todoList");
 
-    // === Tambah Tugas ===
     async function addTodo() {
       const task = taskInput.value.trim();
       const date = dateInput.value;
       const priority = priorityInput.value;
       if (!task) return alert("Isi nama tugas dulu!");
+
       await addDoc(todoRef, { task, date, priority, done: false, pic: "" });
       taskInput.value = "";
       dateInput.value = "";
     }
+
     addBtn.addEventListener("click", addTodo);
 
-    // === Real-time Update ===
-    onSnapshot(todoRef, (snapshot) => {
+    onSnapshot(q, (snapshot) => {
       todoList.innerHTML = "";
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
         const id = docSnap.id;
+
         const div = document.createElement("div");
-        div.className = "todo-item";
-        if (data.done) div.classList.add("done");
+        div.className = "todo-card" + (data.done ? " done" : "");
 
         div.innerHTML = `
           <div class="todo-header">
-            <b>${data.task}</b>
+            <h3>${data.task}</h3>
             <div class="todo-actions">
               <button data-action="done">✅</button>
               <button data-action="delete">🗑️</button>
             </div>
           </div>
-          <div class="todo-meta">
-            📅 ${data.date || "-"} • ⭐ ${data.priority}
-          </div>
+          <div class="todo-meta">📅 ${data.date || "-"} • ⭐ ${data.priority}</div>
           ${data.done && data.pic ? `<div class="pic-info">👤 Dikerjakan oleh: ${data.pic}</div>` : ""}
         `;
 
@@ -217,16 +219,14 @@
         doneBtn.addEventListener("click", async () => {
           if (!data.done) {
             const pic = prompt("Siapa PIC yang menyelesaikan tugas ini?");
-            if (pic) await updateDoc(doc(db, "todos", id), { done: true, pic });
+            await updateDoc(doc(db, "todos", id), { done: true, pic });
           } else {
             await updateDoc(doc(db, "todos", id), { done: false, pic: "" });
           }
         });
 
         delBtn.addEventListener("click", async () => {
-          if (confirm("Hapus tugas ini?")) {
-            await deleteDoc(doc(db, "todos", id));
-          }
+          if (confirm("Hapus tugas ini?")) await deleteDoc(doc(db, "todos", id));
         });
 
         todoList.appendChild(div);
