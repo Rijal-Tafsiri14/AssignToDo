@@ -70,6 +70,7 @@
       padding: 10px 14px;
       border-radius: 8px;
       margin-bottom: 10px;
+      transition: all 0.2s ease;
     }
     li.done span {
       text-decoration: line-through;
@@ -80,6 +81,8 @@
       border: none;
       color: var(--accent);
       cursor: pointer;
+      font-size: 16px;
+      margin-left: 6px;
     }
   </style>
 </head>
@@ -95,51 +98,54 @@
 
   <!-- Firebase -->
   <script type="module">
-    import { initializeApp } from "firebase/app";
-    import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot } 
-      from "firebase/analytics";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { 
+      getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot, query, orderBy 
+    } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-    // GANTI DENGAN PUNYAMU 🔥
+    // ✅ Firebase Config kamu
     const firebaseConfig = {
-  apiKey: "AIzaSyD4C76y8m0u7QBDownZGnbhpiPs9AT9AkY",
-  authDomain: "todo-realtime-318f7.firebaseapp.com",
-  projectId: "todo-realtime-318f7",
-  storageBucket: "todo-realtime-318f7.firebasestorage.app",
-  messagingSenderId: "153651970645",
-  appId: "1:153651970645:web:8f97601a96edb822ba0adc",
-  measurementId: "G-VGLGC7G5MT"
-};
+      apiKey: "AIzaSyD4C76y8m0u7QBDownZGnbhpiPs9AT9AkY",
+      authDomain: "todo-realtime-318f7.firebaseapp.com",
+      projectId: "todo-realtime-318f7",
+      storageBucket: "todo-realtime-318f7.firebasestorage.app",
+      messagingSenderId: "153651970645",
+      appId: "1:153651970645:web:8f97601a96edb822ba0adc",
+      measurementId: "G-VGLGC7G5MT"
+    };
 
+    // 🔥 Inisialisasi Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const analytics = getAnalytics(app);
     const todosRef = collection(db, "todos");
 
     const form = document.getElementById("todoForm");
     const taskInput = document.getElementById("taskInput");
     const list = document.getElementById("todoList");
 
-    // Tambah data
+    // ➕ Tambah data
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const text = taskInput.value.trim();
       if (!text) return;
-      await addDoc(todosRef, {
-        text,
-        done: false,
-        createdAt: Date.now()
-      });
-      taskInput.value = "";
+      try {
+        await addDoc(todosRef, {
+          text,
+          done: false,
+          createdAt: Date.now()
+        });
+        taskInput.value = "";
+      } catch (err) {
+        alert("Gagal menambah data: " + err.message);
+      }
     });
 
-    // Realtime sync
-    onSnapshot(todosRef, (snapshot) => {
+    // 🔁 Realtime listener (semua user sinkron)
+    const q = query(todosRef, orderBy("createdAt", "desc"));
+    onSnapshot(q, (snapshot) => {
       list.innerHTML = "";
-      const tasks = [];
-      snapshot.forEach((docSnap) => tasks.push({ id: docSnap.id, ...docSnap.data() }));
-      tasks.sort((a,b)=>b.createdAt-a.createdAt);
-
-      tasks.forEach(task => {
+      snapshot.forEach((docSnap) => {
+        const task = { id: docSnap.id, ...docSnap.data() };
         const li = document.createElement("li");
         li.className = task.done ? "done" : "";
         li.innerHTML = `
@@ -153,7 +159,7 @@
       });
     });
 
-    // Delegasi tombol
+    // ⚡ Aksi tombol toggle & delete
     list.addEventListener("click", async (e) => {
       const btn = e.target.closest("button");
       if (!btn) return;
@@ -161,12 +167,16 @@
       const action = btn.dataset.action;
       const ref = doc(db, "todos", id);
 
-      if (action === "toggle") {
-        const li = btn.closest("li");
-        const done = li.classList.contains("done");
-        await updateDoc(ref, { done: !done });
-      } else if (action === "delete") {
-        await deleteDoc(ref);
+      try {
+        if (action === "toggle") {
+          const li = btn.closest("li");
+          const done = li.classList.contains("done");
+          await updateDoc(ref, { done: !done });
+        } else if (action === "delete") {
+          await deleteDoc(ref);
+        }
+      } catch (err) {
+        alert("Gagal update data: " + err.message);
       }
     });
   </script>
