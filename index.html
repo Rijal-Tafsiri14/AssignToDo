@@ -279,9 +279,28 @@
     measurementId: "G-ZNQ76GQKKC"
   };
 
-  // Initialize Firebase
+  // 🔥 Inisialisasi Firebase
   const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
+  const db = getFirestore(app);
+
+  // 📝 Simpan to-do ke Firestore
+  async function addTodo(text) {
+    await addDoc(collection(db, "todos"), { text: text, done: false });
+    console.log("To-do disimpan:", text);
+  }
+
+  // 📥 Ambil semua to-do
+  async function loadTodos() {
+    const querySnapshot = await getDocs(collection(db, "todos"));
+    querySnapshot.forEach((docu) => {
+      console.log(docu.id, "=>", docu.data());
+    });
+  }
+
+  // Coba test
+  addTodo("Coba dari web");
+  loadTodos();
 </script>
 </body>
 </html>
+
