@@ -1,90 +1,139 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>To-Do List Realtime + PIC</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Realtime To-Do List + PIC</title>
   <style>
+    /* === Global Styles === */
+    * { box-sizing: border-box; }
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #0e1525;
-      color: #fff;
+      background: linear-gradient(145deg, #0d1323, #1a2238);
+      font-family: "Segoe UI", sans-serif;
+      color: #f8f9fa;
       margin: 0;
-      padding: 20px;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
     }
+
     h1 {
-      text-align: center;
-      margin-bottom: 20px;
+      margin-top: 40px;
       color: #00e5ff;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
     }
+
+    /* === Container === */
     .todo-container {
+      width: 90%;
       max-width: 700px;
-      margin: 0 auto;
-      background: #182236;
+      background: #1f2a44;
       padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      margin-top: 20px;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
     }
+
+    /* === Input Area === */
     .todo-inputs {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
-    .todo-inputs input, .todo-inputs select {
-      padding: 8px;
-      border-radius: 8px;
-      border: none;
+
+    .todo-inputs input, 
+    .todo-inputs select {
       flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      font-size: 1em;
+      background: #2b3b5a;
+      color: #fff;
     }
+
     .todo-inputs button {
       background: #00e5ff;
       border: none;
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      color: #000;
-      font-weight: bold;
-    }
-    .todo-item {
-      background: #1f2d46;
+      padding: 10px 18px;
       border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+      cursor: pointer;
+      color: #0d1323;
+      font-weight: bold;
+      transition: 0.2s ease;
     }
+    .todo-inputs button:hover {
+      background: #00bcd4;
+    }
+
+    /* === Todo Card === */
+    .todo-item {
+      background: #273454;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+      transition: all 0.3s ease;
+    }
+    .todo-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    }
+
     .todo-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      font-size: 1.05em;
     }
+
     .todo-actions button {
       border: none;
       background: #00e5ff;
       color: #000;
-      padding: 6px 8px;
-      border-radius: 6px;
+      padding: 6px 9px;
+      border-radius: 8px;
       cursor: pointer;
       margin-left: 4px;
+      transition: 0.2s;
     }
+
+    .todo-actions button:hover {
+      background: #00bcd4;
+      transform: scale(1.05);
+    }
+
     .todo-meta {
-      font-size: 0.85em;
-      color: #ccc;
+      font-size: 0.9em;
+      color: #b0c7ff;
+      margin-top: 4px;
     }
-    .done {
-      text-decoration: line-through;
-      color: #aaa;
-    }
+
     .pic-info {
+      font-size: 0.9em;
+      margin-top: 5px;
       color: #ffd700;
       font-style: italic;
+    }
+
+    .done {
+      opacity: 0.7;
+      text-decoration: line-through;
+    }
+
+    @media (max-width: 600px) {
+      .todo-inputs { flex-direction: column; }
     }
   </style>
 </head>
 <body>
-  <h1>To-Do List Realtime + PIC 👥</h1>
+  <h1>Realtime To-Do List 👥</h1>
 
   <div class="todo-container">
     <div class="todo-inputs">
@@ -105,6 +154,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
+    // === Firebase Config ===
     const firebaseConfig = {
       apiKey: "AIzaSyD4C76y8m0u7QBDownZGnbhpiPs9AT9AkY",
       authDomain: "todo-realtime-318f7.firebaseapp.com",
@@ -125,25 +175,24 @@
     const addBtn = document.getElementById("addBtn");
     const todoList = document.getElementById("todoList");
 
+    // === Tambah Tugas ===
     async function addTodo() {
       const task = taskInput.value.trim();
       const date = dateInput.value;
       const priority = priorityInput.value;
-
       if (!task) return alert("Isi nama tugas dulu!");
       await addDoc(todoRef, { task, date, priority, done: false, pic: "" });
       taskInput.value = "";
       dateInput.value = "";
     }
-
     addBtn.addEventListener("click", addTodo);
 
+    // === Real-time Update ===
     onSnapshot(todoRef, (snapshot) => {
       todoList.innerHTML = "";
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
         const id = docSnap.id;
-
         const div = document.createElement("div");
         div.className = "todo-item";
         if (data.done) div.classList.add("done");
@@ -168,7 +217,7 @@
         doneBtn.addEventListener("click", async () => {
           if (!data.done) {
             const pic = prompt("Siapa PIC yang menyelesaikan tugas ini?");
-            await updateDoc(doc(db, "todos", id), { done: true, pic });
+            if (pic) await updateDoc(doc(db, "todos", id), { done: true, pic });
           } else {
             await updateDoc(doc(db, "todos", id), { done: false, pic: "" });
           }
